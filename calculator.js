@@ -6,7 +6,6 @@ const activityHelp = byId("activity-help");
 const goal = byId("goal");
 const results = byId("nutrition-results");
 const statusLine = byId("result-status");
-const activityNote = byId("activity-note");
 
 for (const [value, level] of Object.entries(ACTIVITY_LEVELS)) {
     activity.add(new Option(level.name, value));
@@ -24,8 +23,7 @@ function formatRange(range) {
     return (low === high ? low : `${low}–${high}`) + " 公克";
 }
 
-form.addEventListener("input", (event) => {
-    if (event.target.id === "height") return;
+form.addEventListener("input", () => {
     updateActivityHelp();
     if (!results.hidden) {
         results.hidden = true;
@@ -37,24 +35,24 @@ form.addEventListener("submit", (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
 
-    const requestedLevel = Number(activity.value);
     const target = CalcDailyTarget(
         Number(byId("gender").value),
         byId("age").valueAsNumber,
+        byId("height").valueAsNumber,
         byId("weight").valueAsNumber,
-        requestedLevel,
+        Number(activity.value),
         goal.value,
     );
-    if (!target) {
+    if (target.error) {
         results.hidden = true;
-        statusLine.textContent = "無法計算，請確認輸入資料。";
+        statusLine.textContent = target.error;
         return;
     }
 
-    const appliedActivity = ACTIVITY_LEVELS[target.level].name;
     const kcal = Math.round(target.kcal);
-    byId("result-activity").textContent = `生活活動強度：${appliedActivity}`;
+    byId("result-activity").textContent = `生活活動強度：${ACTIVITY_LEVELS[activity.value].name}`;
     byId("result-goal").textContent = `目標：${GOALS[goal.value].name}`;
+    byId("bmr-kcal").textContent = Math.round(target.bmr_kcal);
     byId("maintain-kcal").textContent = Math.round(target.maintain_kcal);
     byId("target-kcal").textContent = `${kcal} 大卡`;
     for (const [name, range] of Object.entries(target.ranges)) {
@@ -64,10 +62,6 @@ form.addEventListener("submit", (event) => {
         byId(group).textContent = `${target.servings[group]} 份`;
     }
 
-    activityNote.hidden = target.level === requestedLevel;
-    activityNote.textContent = activityNote.hidden
-        ? ""
-        : `此年齡層沒有「${ACTIVITY_LEVELS[requestedLevel].name}」的參考值，改用「${appliedActivity}」計算。`;
     results.hidden = false;
     statusLine.textContent = `每日建議量已更新：${kcal} 大卡。`;
 });

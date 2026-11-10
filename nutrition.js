@@ -1,14 +1,16 @@
-// 移植自 HD_bot 的 Modules/Nutrition.js（來源版本見 README.md）。
+// 移植自 HD_bot 的 Modules/Nutrition.js，更新公式時請同步兩邊。
 const Nutrition = (() => {
-    // 依衛福部國健署「國人膳食營養素參考攝取量」第八版（111年）計算每日熱量，
-    // 再依「食物代換表」把蛋白質、脂質、碳水化合物換算成六大類食物的份數
+    // 基礎代謝依日本厚生勞動省《日本人の食事摂取基準（2025年版）》表 2。
+    // https://www.mhlw.go.jp/content/10904750/001316585.pdf#page=77
+    const BMR_AGE = { min: 18, max: 79 };
+    const BMR_INTERCEPT = { 1: 0.4235, 2: 0.9708 };
 
     // 生活活動強度，DRIs 第八版對應的 PAL 為 低 1.3、稍低 1.5、適度 1.7、高 1.9
     const ACTIVITY_LEVELS = {
-        1: { name: "低", example: "大多靜態，如坐著看書、看電視" },
-        2: { name: "稍低", example: "站立活動，如站著說話、烹飪、開車、打電腦" },
-        3: { name: "適度", example: "正常速度活動，如在公車上站著、做家事、散步、購物" },
-        4: { name: "高", example: "快速或激烈活動，如上下樓梯、打球、騎腳踏車、游泳" },
+        1: { name: "低", pal: 1.3, example: "大多靜態，如坐著看書、看電視" },
+        2: { name: "稍低", pal: 1.5, example: "站立活動，如站著說話、烹飪、開車、打電腦" },
+        3: { name: "適度", pal: 1.7, example: "正常速度活動，如在公車上站著、做家事、散步、購物" },
+        4: { name: "高", pal: 1.9, example: "快速或激烈活動，如上下樓梯、打球、騎腳踏車、游泳" },
     };
 
     // 每日少吃 / 多吃 500 大卡，約每週減少 / 增加 0.5 公斤
@@ -21,35 +23,10 @@ const Nutrition = (() => {
     // 減重時每日熱量的下限（男 1500、女 1200 大卡）
     const MIN_KCAL = { 1: 1500, 2: 1200 };
 
-    // DRIs 第八版總表：年齡下限、參考體重(kg)、熱量(kcal)依 低/稍低/適度/高 排列、蛋白質 RDA(g)
-    // null 表示該年齡層沒有列出這個強度等級
-    const DRIS_TABLE = {
-        // 男
-        1: [
-            { min_age: 1, weight: 13, kcal: [null, 1150, 1350, null], protein: 20 },
-            { min_age: 4, weight: 20, kcal: [null, 1550, 1800, null], protein: 30 },
-            { min_age: 7, weight: 28, kcal: [null, 1800, 2100, null], protein: 40 },
-            { min_age: 10, weight: 38, kcal: [null, 2050, 2350, null], protein: 55 },
-            { min_age: 13, weight: 55, kcal: [null, 2400, 2800, null], protein: 70 },
-            { min_age: 16, weight: 62, kcal: [2150, 2500, 2900, 3350], protein: 75 },
-            { min_age: 19, weight: 64, kcal: [1850, 2150, 2400, 2700], protein: 70 },
-            { min_age: 31, weight: 64, kcal: [1800, 2100, 2400, 2650], protein: 70 },
-            { min_age: 51, weight: 60, kcal: [1700, 1950, 2250, 2500], protein: 70 },
-            { min_age: 71, weight: 58, kcal: [1650, 1900, 2150, null], protein: 70 },
-        ],
-        // 女
-        2: [
-            { min_age: 1, weight: 13, kcal: [null, 1150, 1350, null], protein: 20 },
-            { min_age: 4, weight: 19, kcal: [null, 1400, 1650, null], protein: 30 },
-            { min_age: 7, weight: 27, kcal: [null, 1650, 1900, null], protein: 40 },
-            { min_age: 10, weight: 39, kcal: [null, 1950, 2250, null], protein: 50 },
-            { min_age: 13, weight: 49, kcal: [null, 2050, 2350, null], protein: 60 },
-            { min_age: 16, weight: 51, kcal: [1650, 1900, 2250, 2550], protein: 55 },
-            { min_age: 19, weight: 52, kcal: [1450, 1650, 1900, 2100], protein: 60 },
-            { min_age: 31, weight: 54, kcal: [1450, 1650, 1900, 2100], protein: 60 },
-            { min_age: 51, weight: 52, kcal: [1400, 1600, 1800, 2000], protein: 60 },
-            { min_age: 71, weight: 50, kcal: [1300, 1500, 1700, null], protein: 60 },
-        ],
+    // DRIs 第八版的蛋白質 RDA（公克／天），保留公式涵蓋的年齡組
+    const PROTEIN_RDA = {
+        1: { under_19: 75, adult: 70 },
+        2: { under_19: 55, adult: 60 },
     };
 
     // 三大營養素佔總熱量的比例範圍：脂質、碳水化合物為 DRIs 的 AMDR，
@@ -119,32 +96,38 @@ const Nutrition = (() => {
     const GUIDE_VEGETABLES = [3, 3, 3, 4, 4, 5, 5];
     const GUIDE_FRUITS = [2, 2, 2, 3, 3.5, 4, 4];
 
-    function FindDris(gender, age) {
-        const table = DRIS_TABLE[gender];
-        if (!table || !(age >= table[0].min_age)) return null;
-        return table.findLast((row) => age >= row.min_age);
-    }
+    // 輸入資料不支援時，回傳可直接顯示的原因。
+    function CalcDailyTarget(gender, age, height, weight, activity, goal) {
+        if (!Number.isFinite(age) || age < BMR_AGE.min || age > BMR_AGE.max) {
+            return { error: `基礎代謝公式適用於 ${BMR_AGE.min}–${BMR_AGE.max} 歲。` };
+        }
+        if (!Number.isFinite(height) || height < 50 || height > 250) {
+            return { error: "請填寫有效身高（50–250 公分）。" };
+        }
+        if (!Number.isFinite(weight) || weight < 10 || weight > 500) {
+            return { error: "請填寫有效體重（10–500 公斤）。" };
+        }
+        const intercept = BMR_INTERCEPT[gender];
+        const pal = ACTIVITY_LEVELS[activity]?.pal;
+        const adjustment = GOALS[goal]?.kcal;
+        if (!Number.isFinite(intercept)) return { error: "請選擇生理性別。" };
+        if (!Number.isFinite(pal)) return { error: "請選擇生活活動強度。" };
+        if (!Number.isFinite(adjustment)) return { error: "請選擇體重目標。" };
 
-    // 輸入資料不支援時回傳 null（例如舊版註冊時填的運動強度倍數）
-    function CalcDailyTarget(gender, age, weight, activity, goal) {
-        const dris = FindDris(gender, age);
-        if (!dris || !ACTIVITY_LEVELS[activity] || !GOALS[goal] || !(weight > 0)) return null;
+        // 國立健康・營養研究所公式：體重用公斤、身高用公分，結果換算為大卡／天。
+        const bmr_kcal = ((0.0481 * weight + 0.0234 * height - 0.0138 * age - intercept) * 1000) / 4.186;
+        if (bmr_kcal <= 0) return { error: "此身高、體重與年齡的組合無法估算基礎代謝。" };
+        const maintain_kcal = bmr_kcal * pal;
 
-        // 兒童、青少年與 71 歲以上沒有列出全部的強度等級，改用最接近的等級
-        let level = activity;
-        if (dris.kcal[level - 1] == null) level = level == 1 ? 2 : 3;
+        let kcal = maintain_kcal + adjustment;
+        if (adjustment < 0) kcal = Math.max(kcal, Math.min(maintain_kcal, MIN_KCAL[gender]));
 
-        // DRIs 的熱量是以參考體重算出，依使用者的體重等比例換算
-        const maintain_kcal = (dris.kcal[level - 1] * weight) / dris.weight;
-
-        let kcal = maintain_kcal + GOALS[goal].kcal;
-        if (GOALS[goal].kcal < 0) kcal = Math.max(kcal, Math.min(maintain_kcal, MIN_KCAL[gender]));
-
-        const ranges = CalcNutrientRanges(kcal, dris.protein);
-        const nutrients = CalcNutrients(kcal, dris.protein);
+        const protein_rda = age < 19 ? PROTEIN_RDA[gender].under_19 : PROTEIN_RDA[gender].adult;
+        const ranges = CalcNutrientRanges(kcal, protein_rda);
+        const nutrients = CalcNutrients(kcal, protein_rda);
         const servings = NutrientsToServings(kcal, nutrients);
 
-        return { level, maintain_kcal, kcal, ranges, nutrients, servings };
+        return { bmr_kcal, maintain_kcal, kcal, ranges, nutrients, servings };
     }
 
     // 各營養素的建議範圍(g)，給使用者參考
@@ -236,6 +219,7 @@ const Nutrition = (() => {
     }
 
     return {
+        BMR_AGE: BMR_AGE,
         ACTIVITY_LEVELS: ACTIVITY_LEVELS,
         GOALS: GOALS,
         SERVING: SERVING,

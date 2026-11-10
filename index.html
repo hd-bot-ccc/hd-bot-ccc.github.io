@@ -134,9 +134,8 @@
             margin-bottom: 16px;
         }
 
-        .activity-note {
-            margin-top: -12px;
-            margin-bottom: 24px;
+        .help-text a {
+            color: var(--accent-blue);
         }
 
         /* 2. 營養計算與目標呈現區 */
@@ -274,7 +273,8 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label for="age">年齡（歲）</label>
-                    <input type="number" id="age" min="1" max="120" step="any" required>
+                    <input type="number" id="age" min="18" max="79" step="any" aria-describedby="age-help" required>
+                    <small id="age-help" class="help-text">基礎代謝公式適用於 18–79 歲。</small>
                 </div>
                 <div class="form-group">
                     <label for="gender">生理性別</label>
@@ -292,9 +292,8 @@
                     <small id="activity-help" class="help-text">依一天中大部分時間的活動選擇。</small>
                 </div>
                 <div class="form-group">
-                    <label for="height">身高（公分，選填）</label>
-                    <input type="number" id="height" min="50" max="250" step="any" aria-describedby="height-help">
-                    <small id="height-help" class="help-text">沿用機器人的基本資料欄位，身高不影響每日建議量。</small>
+                    <label for="height">身高（公分）</label>
+                    <input type="number" id="height" min="50" max="250" step="any" required>
                 </div>
                 <div class="form-group">
                     <label for="weight">體重（公斤）</label>
@@ -325,10 +324,10 @@
                     <span class="summary-tag" id="result-goal" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;"></span>
                 </div>
                 <div class="tdee-val">
-                    維持體重約需 <span id="maintain-kcal" style="color: var(--primary);"></span> 大卡
+                    <div>基礎代謝約 <span id="bmr-kcal" style="color: var(--primary);"></span> 大卡／天</div>
+                    <div>維持體重約需 <span id="maintain-kcal" style="color: var(--primary);"></span> 大卡／天</div>
                 </div>
             </div>
-            <p id="activity-note" class="help-text activity-note" hidden></p>
 
             <!-- 熱量與三大營養素目標卡片 -->
             <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--text-muted);">🔥 熱量與三大營養素建議量</h3>
@@ -379,7 +378,7 @@
                     <div class="food-amount" id="oils_fats_nuts_and_seeds"></div>
                 </div>
             </div>
-            <p class="help-text" style="margin-top: 16px;">依「國人膳食營養素參考攝取量」第八版與食物代換表估算，供飲食規劃參考。</p>
+            <p class="help-text" style="margin-top: 16px;">基礎代謝依<a href="https://www.mhlw.go.jp/content/10904750/001316585.pdf#page=77">日本國立健康與營養研究所公式</a>估算。活動係數沿用國健署第八版資料，食物份數依食物代換表估算。</p>
         </div>
     </div>
 
