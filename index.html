@@ -234,7 +234,7 @@
             white-space: nowrap;
         }
 
-        /* 3. Discord 機器人連結預留區 */
+        /* 3. Discord 機器人邀請區 */
         .discord-card {
             text-align: center;
             background: linear-gradient(135deg, rgba(88,101,242,0.12) 0%, rgba(30,41,59,1) 100%);
@@ -254,10 +254,6 @@
             font-size: 1rem;
             border: 0;
             margin-top: 16px;
-        }
-
-        .discord-btn:disabled {
-            opacity: 0.7;
         }
     </style>
     <script src="nutrition.js" defer></script>
@@ -387,14 +383,14 @@
         </div>
     </div>
 
-    <!-- 3. Discord 邀請連結預留區塊 -->
+    <!-- 3. Discord 邀請連結 -->
     <div class="card discord-card">
         <h2 style="font-size: 1.3rem; margin-bottom: 8px;">🚀 邀請營養機器人到你的 Discord 伺服器</h2>
         <p style="color: var(--text-muted); font-size: 0.95rem;">
             輕鬆打造社群專屬健康追蹤體驗，讓營養規劃變得簡單直覺！
         </p>
-        
-        <button type="button" class="discord-btn" disabled>Discord 邀請連結尚未開放</button>
+
+        <a class="discord-btn" href="https://discord.com/oauth2/authorize?client_id=1549695115252072579">將機器人加入 Discord</a>
     </div>
 </div>
 
