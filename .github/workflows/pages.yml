@@ -30,7 +30,9 @@ jobs:
           tidy -utf8 -errors -quiet index.html
 
       - name: Stage site
-        run: install -Dm644 index.html _site/index.html
+        run: |
+          mkdir -p _site
+          install -m644 index.html nutrition.js calculator.js _site/
 
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

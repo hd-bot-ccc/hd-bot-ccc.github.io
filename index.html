@@ -6,6 +6,7 @@
     <title>Discord 營養機器人 | 膳食攝取規劃儀表板</title>
     <style>
         :root {
+            color-scheme: dark;
             --bg-color: #0f172a;
             --card-bg: #1e293b;
             --card-border: #334155;
@@ -92,6 +93,7 @@
         }
 
         .form-group input, .form-group select {
+            min-width: 0;
             background: var(--bg-color);
             border: 1px solid var(--card-border);
             border-radius: 8px;
@@ -104,6 +106,37 @@
 
         .form-group input:focus, .form-group select:focus {
             border-color: var(--primary);
+        }
+
+        .calculate-btn {
+            background: var(--primary);
+            color: var(--bg-color);
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 20px;
+            margin-top: 18px;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .calculate-btn:disabled {
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        .help-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .result-status {
+            margin-bottom: 16px;
+        }
+
+        .activity-note {
+            margin-top: -12px;
+            margin-bottom: 24px;
         }
 
         /* 2. 營養計算與目標呈現區 */
@@ -197,6 +230,8 @@
             font-weight: bold;
             color: var(--accent-blue);
             font-size: 1.05rem;
+            margin-left: 8px;
+            white-space: nowrap;
         }
 
         /* 3. Discord 機器人連結預留區 */
@@ -225,124 +260,125 @@
             opacity: 0.7;
         }
     </style>
+    <script src="nutrition.js" defer></script>
+    <script src="calculator.js" defer></script>
 </head>
 <body>
 
 <div class="container">
     <header>
         <h1>Discord 營養機器人</h1>
-        <p>膳食攝取規劃儀表板 · 靜態原型</p>
+        <p>膳食攝取規劃儀表板</p>
     </header>
 
     <!-- 1. 個人數據輸入欄位 -->
     <div class="card">
         <h2 class="card-title">📝 輸入個人基本數據</h2>
-        <div id="nutrition-form">
+        <form id="nutrition-form">
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="age">年齡</label>
-                    <input type="number" id="age" placeholder="請輸入年齡">
+                    <label for="age">年齡（歲）</label>
+                    <input type="number" id="age" min="1" max="120" step="any" placeholder="1–120" required>
                 </div>
                 <div class="form-group">
-                    <label for="gender">性別</label>
-                    <select id="gender">
-                        <option value="male">男</option>
-                        <option value="female">女</option>
+                    <label for="gender">生理性別</label>
+                    <select id="gender" required>
+                        <option value="" selected disabled>請選擇</option>
+                        <option value="1">男</option>
+                        <option value="2">女</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="activity">生活活動強度</label>
-                    <select id="activity">
-                        <option value="low" selected>低 (久坐/辦公)</option>
-                        <option value="moderate">中 (每週運動 3-5 天)</option>
-                        <option value="high">高 (高強度運動/勞動)</option>
+                    <select id="activity" aria-describedby="activity-help" required>
+                        <option value="" selected disabled>請選擇</option>
                     </select>
+                    <small id="activity-help" class="help-text">依一天中大部分時間的活動選擇。</small>
                 </div>
                 <div class="form-group">
-                    <label for="height">身高 (cm)</label>
-                    <input type="number" id="height" placeholder="請輸入身高">
-                </div>
-                <div class="form-group">
-                    <label for="weight">體重 (kg)</label>
-                    <input type="number" id="weight" placeholder="請輸入體重">
+                    <label for="weight">體重（公斤）</label>
+                    <input type="number" id="weight" min="10" max="500" step="any" placeholder="10–500" required>
                 </div>
                 <div class="form-group">
                     <label for="goal">目標</label>
-                    <select id="goal">
-                        <option value="lose" selected>減重</option>
-                        <option value="maintain">維持體重</option>
-                        <option value="gain">增重/增肌</option>
-                    </select>
+                    <select id="goal" required></select>
                 </div>
             </div>
-        </div>
+            <button type="submit" class="calculate-btn" disabled>計算每日攝取量</button>
+            <p class="help-text">資料只在你的瀏覽器中計算。</p>
+            <noscript><p class="help-text">請啟用 JavaScript 以使用計算功能。</p></noscript>
+        </form>
     </div>
 
     <!-- 2. 計算結果呈現區 (純目標量展示) -->
     <div class="card">
-        <h2 class="card-title">📊 每日參考膳食攝取量（範例）</h2>
+        <h2 class="card-title">📊 每日參考膳食攝取量</h2>
 
-        <p style="margin-bottom: 16px; color: var(--text-muted);">以下為版面示意數值，不會依上方輸入更新。輸入資料不會送出。</p>
+        <p id="result-status" class="help-text result-status" role="status">填寫資料後即可計算每日建議量。</p>
 
-        <!-- 狀態摘要標籤 -->
-        <div class="summary-banner">
-            <div class="tag-group">
-                <span class="summary-tag">生活活動強度：低</span>
-                <span class="summary-tag" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">目標：減重</span>
+        <div id="nutrition-results" hidden>
+            <!-- 狀態摘要標籤 -->
+            <div class="summary-banner">
+                <div class="tag-group">
+                    <span class="summary-tag" id="result-activity"></span>
+                    <span class="summary-tag" id="result-goal" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;"></span>
+                </div>
+                <div class="tdee-val">
+                    維持體重約需 <span id="maintain-kcal" style="color: var(--primary);"></span> 大卡
+                </div>
             </div>
-            <div class="tdee-val">
-                維持體重約需 <span style="color: var(--primary);">2081</span> 大卡
-            </div>
-        </div>
+            <p id="activity-note" class="help-text activity-note" hidden></p>
 
-        <!-- 熱量與三大營養素目標卡片 -->
-        <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--text-muted);">🔥 熱量與三大營養素建議量</h3>
-        <div class="macro-grid">
-            <div class="macro-card">
-                <div class="macro-label">每日目標熱量</div>
-                <div class="macro-val">1581 大卡</div>
+            <!-- 熱量與三大營養素目標卡片 -->
+            <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--text-muted);">🔥 熱量與三大營養素建議量</h3>
+            <div class="macro-grid">
+                <div class="macro-card">
+                    <div class="macro-label">每日目標熱量</div>
+                    <div class="macro-val" id="target-kcal"></div>
+                </div>
+                <div class="macro-card">
+                    <div class="macro-label">🥩 蛋白質</div>
+                    <div class="macro-val" id="target-protein"></div>
+                </div>
+                <div class="macro-card">
+                    <div class="macro-label">🥑 脂質</div>
+                    <div class="macro-val" id="target-fat"></div>
+                </div>
+                <div class="macro-card">
+                    <div class="macro-label">🌾 碳水化合物</div>
+                    <div class="macro-val" id="target-carbs"></div>
+                </div>
             </div>
-            <div class="macro-card">
-                <div class="macro-label">🥩 蛋白質</div>
-                <div class="macro-val">70–79 公克</div>
-            </div>
-            <div class="macro-card">
-                <div class="macro-label">🥑 脂質</div>
-                <div class="macro-val">35–53 公克</div>
-            </div>
-            <div class="macro-card">
-                <div class="macro-label">🌾 碳水化合物</div>
-                <div class="macro-val">198–257 公克</div>
-            </div>
-        </div>
 
-        <!-- 六大類食物每日建議份數 -->
-        <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--text-muted);">🥗 六大類食物每日建議份數</h3>
-        <div class="food-grid">
-            <div class="food-card">
-                <div class="food-name">🍚 全穀雜糧類</div>
-                <div class="food-amount">11 份</div>
+            <!-- 六大類食物每日建議份數 -->
+            <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--text-muted);">🥗 六大類食物每日建議份數</h3>
+            <div class="food-grid">
+                <div class="food-card">
+                    <div class="food-name">🍚 全穀雜糧類</div>
+                    <div class="food-amount" id="whole_grains"></div>
+                </div>
+                <div class="food-card">
+                    <div class="food-name">🍳 豆魚蛋肉類</div>
+                    <div class="food-amount" id="legumes_fish_meat_and_eggs"></div>
+                </div>
+                <div class="food-card">
+                    <div class="food-name">🥛 乳品類</div>
+                    <div class="food-amount" id="dairy"></div>
+                </div>
+                <div class="food-card">
+                    <div class="food-name">🥦 蔬菜類</div>
+                    <div class="food-amount" id="vegetables"></div>
+                </div>
+                <div class="food-card">
+                    <div class="food-name">🍎 水果類</div>
+                    <div class="food-amount" id="fruits"></div>
+                </div>
+                <div class="food-card">
+                    <div class="food-name">🥜 油脂與堅果種子類</div>
+                    <div class="food-amount" id="oils_fats_nuts_and_seeds"></div>
+                </div>
             </div>
-            <div class="food-card">
-                <div class="food-name">🍳 豆魚蛋肉類</div>
-                <div class="food-amount">4.5 份</div>
-            </div>
-            <div class="food-card">
-                <div class="food-name">🥛 乳品類</div>
-                <div class="food-amount">1 份</div>
-            </div>
-            <div class="food-card">
-                <div class="food-name">🥦 蔬菜類</div>
-                <div class="food-amount">3 份</div>
-            </div>
-            <div class="food-card">
-                <div class="food-name">🍎 水果類</div>
-                <div class="food-amount">2 份</div>
-            </div>
-            <div class="food-card">
-                <div class="food-name">🥜 油脂與堅果種子類</div>
-                <div class="food-amount">3 份</div>
-            </div>
+            <p class="help-text" style="margin-top: 16px;">依「國人膳食營養素參考攝取量」第八版與食物代換表估算，供飲食規劃參考。</p>
         </div>
     </div>
 
