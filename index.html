@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord 營養機器人 | 膳食攝取規劃儀表板</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --primary: #10b981;
+            --primary-light: rgba(16, 185, 129, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --discord-blurple: #5865F2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 32px 16px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0 30px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        /* 1. 個人資料表單區 */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select {
+            background: var(--bg-color);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+        }
+
+        /* 2. 營養計算與目標呈現區 */
+        .summary-banner {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: var(--primary-light);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tag-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .summary-tag {
+            display: inline-block;
+            background: var(--card-border);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .tdee-val {
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        /* 三大營養素數值卡片 (純目標顯示) */
+        .macro-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .macro-card {
+            background: var(--bg-color);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .macro-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .macro-val {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* 六大類食物卡片網格 */
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+            gap: 14px;
+        }
+
+        .food-card {
+            background: var(--bg-color);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .food-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+
+        .food-amount {
+            font-weight: bold;
+            color: var(--accent-blue);
+            font-size: 1.05rem;
+        }
+
+        /* 3. Discord 機器人連結預留區 */
+        .discord-card {
+            text-align: center;
+            background: linear-gradient(135deg, rgba(88,101,242,0.12) 0%, rgba(30,41,59,1) 100%);
+            border: 1px solid var(--discord-blurple);
+        }
+
+        .discord-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--discord-blurple);
+            color: #ffffff;
+            padding: 12px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+            border: 0;
+            margin-top: 16px;
+        }
+
+        .discord-btn:disabled {
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Discord 營養機器人</h1>
+        <p>膳食攝取規劃儀表板 · 靜態原型</p>
+    </header>
+
+    <!-- 1. 個人數據輸入欄位 -->
+    <div class="card">
+        <h2 class="card-title">📝 輸入個人基本數據</h2>
+        <div id="nutrition-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="age">年齡</label>
+                    <input type="number" id="age" placeholder="請輸入年齡">
+                </div>
+                <div class="form-group">
+                    <label for="gender">性別</label>
+                    <select id="gender">
+                        <option value="male">男</option>
+                        <option value="female">女</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="activity">生活活動強度</label>
+                    <select id="activity">
+                        <option value="low" selected>低 (久坐/辦公)</option>
+                        <option value="moderate">中 (每週運動 3-5 天)</option>
+                        <option value="high">高 (高強度運動/勞動)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="height">身高 (cm)</label>
+                    <input type="number" id="height" placeholder="請輸入身高">
+                </div>
+                <div class="form-group">
+                    <label for="weight">體重 (kg)</label>
+                    <input type="number" id="weight" placeholder="請輸入體重">
+                </div>
+                <div class="form-group">
+                    <label for="goal">目標</label>
+                    <select id="goal">
+                        <option value="lose" selected>減重</option>
+                        <option value="maintain">維持體重</option>
+                        <option value="gain">增重/增肌</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 計算結果呈現區 (純目標量展示) -->
+    <div class="card">
+        <h2 class="card-title">📊 每日參考膳食攝取量（範例）</h2>
+
+        <p style="margin-bottom: 16px; color: var(--text-muted);">以下為版面示意數值，不會依上方輸入更新。輸入資料不會送出。</p>
+
+        <!-- 狀態摘要標籤 -->
+        <div class="summary-banner">
+            <div class="tag-group">
+                <span class="summary-tag">生活活動強度：低</span>
+                <span class="summary-tag" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">目標：減重</span>
+            </div>
+            <div class="tdee-val">
+                維持體重約需 <span style="color: var(--primary);">2081</span> 大卡
+            </div>
+        </div>
+
+        <!-- 熱量與三大營養素目標卡片 -->
+        <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--text-muted);">🔥 熱量與三大營養素建議量</h3>
+        <div class="macro-grid">
+            <div class="macro-card">
+                <div class="macro-label">每日目標熱量</div>
+                <div class="macro-val">1581 大卡</div>
+            </div>
+            <div class="macro-card">
+                <div class="macro-label">🥩 蛋白質</div>
+                <div class="macro-val">70–79 公克</div>
+            </div>
+            <div class="macro-card">
+                <div class="macro-label">🥑 脂質</div>
+                <div class="macro-val">35–53 公克</div>
+            </div>
+            <div class="macro-card">
+                <div class="macro-label">🌾 碳水化合物</div>
+                <div class="macro-val">198–257 公克</div>
+            </div>
+        </div>
+
+        <!-- 六大類食物每日建議份數 -->
+        <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--text-muted);">🥗 六大類食物每日建議份數</h3>
+        <div class="food-grid">
+            <div class="food-card">
+                <div class="food-name">🍚 全穀雜糧類</div>
+                <div class="food-amount">11 份</div>
+            </div>
+            <div class="food-card">
+                <div class="food-name">🍳 豆魚蛋肉類</div>
+                <div class="food-amount">4.5 份</div>
+            </div>
+            <div class="food-card">
+                <div class="food-name">🥛 乳品類</div>
+                <div class="food-amount">1 份</div>
+            </div>
+            <div class="food-card">
+                <div class="food-name">🥦 蔬菜類</div>
+                <div class="food-amount">3 份</div>
+            </div>
+            <div class="food-card">
+                <div class="food-name">🍎 水果類</div>
+                <div class="food-amount">2 份</div>
+            </div>
+            <div class="food-card">
+                <div class="food-name">🥜 油脂與堅果種子類</div>
+                <div class="food-amount">3 份</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Discord 邀請連結預留區塊 -->
+    <div class="card discord-card">
+        <h2 style="font-size: 1.3rem; margin-bottom: 8px;">🚀 邀請營養機器人到你的 Discord 伺服器</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+            輕鬆打造社群專屬健康追蹤體驗，讓營養規劃變得簡單直覺！
+        </p>
+        
+        <button type="button" class="discord-btn" disabled>Discord 邀請連結尚未開放</button>
+    </div>
+</div>
+
+</body>
+</html>
