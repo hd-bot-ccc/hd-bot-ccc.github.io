@@ -24,7 +24,8 @@ function formatRange(range) {
     return (low === high ? low : `${low}–${high}`) + " 公克";
 }
 
-form.addEventListener("input", () => {
+form.addEventListener("input", (event) => {
+    if (event.target.id === "height") return;
     updateActivityHelp();
     if (!results.hidden) {
         results.hidden = true;
