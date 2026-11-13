@@ -6,6 +6,7 @@ const activityHelp = byId("activity-help");
 const goal = byId("goal");
 const results = byId("nutrition-results");
 const statusLine = byId("result-status");
+const submitButton = form.querySelector('button[type="submit"]');
 
 for (const [value, level] of Object.entries(ACTIVITY_LEVELS)) {
     activity.add(new Option(level.name, value));
@@ -23,18 +24,7 @@ function formatRange(range) {
     return (low === high ? low : `${low}–${high}`) + " 公克";
 }
 
-form.addEventListener("input", () => {
-    updateActivityHelp();
-    if (!results.hidden) {
-        results.hidden = true;
-        statusLine.textContent = "資料已變更，請重新計算。";
-    }
-});
-
-form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (!form.reportValidity()) return;
-
+function calculateTarget() {
     const target = CalcDailyTarget(
         Number(byId("gender").value),
         byId("age").valueAsNumber,
@@ -64,7 +54,38 @@ form.addEventListener("submit", (event) => {
 
     results.hidden = false;
     statusLine.textContent = `每日建議量已更新：${kcal} 大卡。`;
+}
+
+function calculateWhenReady() {
+    if (!form.checkValidity()) {
+        results.hidden = true;
+        statusLine.textContent = "填寫完整且有效的資料後，會自動計算每日建議量。";
+        return false;
+    }
+
+    calculateTarget();
+    return true;
+}
+
+function handleFormChange() {
+    updateActivityHelp();
+    calculateWhenReady();
+}
+
+form.addEventListener("input", handleFormChange);
+form.addEventListener("change", handleFormChange);
+
+form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) {
+        results.hidden = true;
+        statusLine.textContent = "請先修正表單中的資料。";
+        return;
+    }
+
+    calculateTarget();
 });
 
 updateActivityHelp();
-form.querySelector('button[type="submit"]').disabled = false;
+submitButton.disabled = false;
+calculateWhenReady();
