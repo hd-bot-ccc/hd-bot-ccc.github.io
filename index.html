@@ -6,7 +6,7 @@
     <title>Discord 營養機器人 | 膳食攝取規劃儀表板</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;family=Noto+Sans+TC:wght@400;500;700&amp;display=swap" rel="stylesheet">
     <script>
         (function () {
             try {
@@ -337,7 +337,7 @@
             margin-top: 16px;
         }
 
-        .base-stats > div, .macro-row, .food-row {
+        .stat-row, .macro-row, .food-row {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
@@ -346,13 +346,13 @@
             border-bottom: 1px solid var(--on-carbon-line);
         }
 
-        .base-stats dt, .macro-row dt, .food-row dt {
+        .stat-label, .macro-label, .food-label {
             font-size: 0.8rem;
             color: var(--on-carbon-muted);
             font-weight: 400;
         }
 
-        .base-stats dd, .macro-row dd, .food-row dd {
+        .stat-value, .macro-value, .food-value {
             font-size: 0.85rem;
         }
 
@@ -374,7 +374,7 @@
             flex-direction: column;
         }
 
-        .macro-row dd {
+        .macro-value {
             font-size: 0.95rem;
             font-weight: 700;
         }
@@ -385,7 +385,7 @@
             column-gap: 24px;
         }
 
-        .food-row dt {
+        .food-label {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -404,7 +404,7 @@
         .chip-fruits { background: #e8899b; }
         .chip-oils { background: #d9a05b; }
 
-        .food-row .num {
+        .food-value {
             white-space: nowrap;
             color: var(--on-carbon);
         }
@@ -503,7 +503,7 @@
 <div class="container">
     <div class="top-bar">
         <div class="brand">
-            <span class="brand-mark" aria-hidden="true"></span>
+            <span class="brand-mark" aria-hidden="true">&nbsp;</span>
             <span>Discord 營養機器人</span>
             <span class="brand-sub">膳食攝取規劃儀表板</span>
         </div>
@@ -572,68 +572,68 @@
                 <div class="kcal-hero">
                     <div class="kcal-label">每日目標熱量</div>
                     <div class="kcal-value">
-                        <span class="num" id="target-kcal"></span>
+                        <span class="num" id="target-kcal">&nbsp;</span>
                         <span class="kcal-unit">大卡／天</span>
                     </div>
                     <div class="meta-tags">
-                        <span class="meta-tag" id="result-activity"></span>
-                        <span class="meta-tag" id="result-goal"></span>
+                        <span class="meta-tag" id="result-activity">&nbsp;</span>
+                        <span class="meta-tag" id="result-goal">&nbsp;</span>
                     </div>
                 </div>
-                <dl class="base-stats">
-                    <div>
-                        <dt>基礎代謝</dt>
-                        <dd><span class="num" id="bmr-kcal"></span> 大卡／天</dd>
+                <div class="base-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">基礎代謝</span>
+                        <span class="stat-value"><span class="num" id="bmr-kcal">&nbsp;</span> 大卡／天</span>
                     </div>
-                    <div>
-                        <dt>維持體重約需</dt>
-                        <dd><span class="num" id="maintain-kcal"></span> 大卡／天</dd>
+                    <div class="stat-row">
+                        <span class="stat-label">維持體重約需</span>
+                        <span class="stat-value"><span class="num" id="maintain-kcal">&nbsp;</span> 大卡／天</span>
                     </div>
-                </dl>
+                </div>
 
                 <h3 class="group-label">三大營養素建議量</h3>
-                <dl class="macro-grid">
+                <div class="macro-grid">
                     <div class="macro-row">
-                        <dt>蛋白質</dt>
-                        <dd class="num" id="target-protein"></dd>
+                        <span class="macro-label">蛋白質</span>
+                        <span class="macro-value num" id="target-protein">&nbsp;</span>
                     </div>
                     <div class="macro-row">
-                        <dt>脂質</dt>
-                        <dd class="num" id="target-fat"></dd>
+                        <span class="macro-label">脂質</span>
+                        <span class="macro-value num" id="target-fat">&nbsp;</span>
                     </div>
                     <div class="macro-row">
-                        <dt>碳水化合物</dt>
-                        <dd class="num" id="target-carbs"></dd>
+                        <span class="macro-label">碳水化合物</span>
+                        <span class="macro-value num" id="target-carbs">&nbsp;</span>
                     </div>
-                </dl>
+                </div>
 
                 <h3 class="group-label">六大類食物每日建議份數</h3>
-                <dl class="food-grid">
+                <div class="food-grid">
                     <div class="food-row">
-                        <dt><span class="food-chip chip-grains" aria-hidden="true"></span>全穀雜糧類</dt>
-                        <dd class="num" id="whole_grains"></dd>
+                        <span class="food-label"><span class="food-chip chip-grains" aria-hidden="true">&nbsp;</span>全穀雜糧類</span>
+                        <span class="food-value num" id="whole_grains">&nbsp;</span>
                     </div>
                     <div class="food-row">
-                        <dt><span class="food-chip chip-protein" aria-hidden="true"></span>豆魚蛋肉類</dt>
-                        <dd class="num" id="legumes_fish_meat_and_eggs"></dd>
+                        <span class="food-label"><span class="food-chip chip-protein" aria-hidden="true">&nbsp;</span>豆魚蛋肉類</span>
+                        <span class="food-value num" id="legumes_fish_meat_and_eggs">&nbsp;</span>
                     </div>
                     <div class="food-row">
-                        <dt><span class="food-chip chip-dairy" aria-hidden="true"></span>乳品類</dt>
-                        <dd class="num" id="dairy"></dd>
+                        <span class="food-label"><span class="food-chip chip-dairy" aria-hidden="true">&nbsp;</span>乳品類</span>
+                        <span class="food-value num" id="dairy">&nbsp;</span>
                     </div>
                     <div class="food-row">
-                        <dt><span class="food-chip chip-vegetables" aria-hidden="true"></span>蔬菜類</dt>
-                        <dd class="num" id="vegetables"></dd>
+                        <span class="food-label"><span class="food-chip chip-vegetables" aria-hidden="true">&nbsp;</span>蔬菜類</span>
+                        <span class="food-value num" id="vegetables">&nbsp;</span>
                     </div>
                     <div class="food-row">
-                        <dt><span class="food-chip chip-fruits" aria-hidden="true"></span>水果類</dt>
-                        <dd class="num" id="fruits"></dd>
+                        <span class="food-label"><span class="food-chip chip-fruits" aria-hidden="true">&nbsp;</span>水果類</span>
+                        <span class="food-value num" id="fruits">&nbsp;</span>
                     </div>
                     <div class="food-row">
-                        <dt><span class="food-chip chip-oils" aria-hidden="true"></span>油脂與堅果種子類</dt>
-                        <dd class="num" id="oils_fats_nuts_and_seeds"></dd>
+                        <span class="food-label"><span class="food-chip chip-oils" aria-hidden="true">&nbsp;</span>油脂與堅果種子類</span>
+                        <span class="food-value num" id="oils_fats_nuts_and_seeds">&nbsp;</span>
                     </div>
-                </dl>
+                </div>
                 <p class="help-text result-footnote">基礎代謝依<a href="https://www.mhlw.go.jp/content/10904750/001316585.pdf#page=77">日本國立健康與營養研究所公式</a>估算。活動係數沿用國健署第八版資料，食物份數依食物代換表估算。</p>
             </div>
         </section>
