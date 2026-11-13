@@ -4,18 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Discord 營養機器人 | 膳食攝取規劃儀表板</title>
+    <script>
+        (function () {
+            try {
+                const theme = localStorage.getItem("theme");
+                if (theme === "light" || theme === "dark") {
+                    document.documentElement.dataset.theme = theme;
+                }
+            } catch (error) {
+                // 無法讀取儲存設定時維持跟隨系統
+            }
+        })();
+    </script>
     <style>
         :root {
-            color-scheme: dark;
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --card-border: #334155;
-            --primary: #10b981;
+            color-scheme: light dark;
+            --bg-color: light-dark(#f1f5f9, #0f172a);
+            --card-bg: light-dark(#ffffff, #1e293b);
+            --card-border: light-dark(#cbd5e1, #334155);
+            --primary: light-dark(#047857, #10b981);
             --primary-light: rgba(16, 185, 129, 0.1);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-blue: #3b82f6;
+            --text-main: light-dark(#0f172a, #f8fafc);
+            --text-muted: light-dark(#475569, #94a3b8);
+            --accent-blue: light-dark(#2563eb, #3b82f6);
             --discord-blurple: #5865F2;
+            --shadow: light-dark(rgba(15, 23, 42, 0.08), rgba(0, 0, 0, 0.25));
+        }
+
+        :root[data-theme="light"] {
+            color-scheme: light;
+        }
+
+        :root[data-theme="dark"] {
+            color-scheme: dark;
         }
 
         * {
@@ -30,11 +51,39 @@
             color: var(--text-main);
             line-height: 1.6;
             padding: 32px 16px;
+            transition: background-color 0.2s, color 0.2s;
         }
 
         .container {
             max-width: 850px;
             margin: 0 auto;
+        }
+
+        .theme-bar {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-width: 116px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            padding: 6px 12px;
+            font: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .theme-toggle:hover {
+            color: var(--text-main);
+            border-color: var(--primary);
         }
 
         header {
@@ -60,7 +109,7 @@
             border-radius: 16px;
             padding: 28px;
             margin-bottom: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            box-shadow: 0 4px 20px var(--shadow);
         }
 
         .card-title {
@@ -236,7 +285,7 @@
         /* 3. Discord 機器人邀請區 */
         .discord-card {
             text-align: center;
-            background: linear-gradient(135deg, rgba(88,101,242,0.12) 0%, rgba(30,41,59,1) 100%);
+            background: linear-gradient(135deg, rgba(88,101,242,0.12) 0%, var(--card-bg) 100%);
             border: 1px solid var(--discord-blurple);
         }
 
@@ -261,6 +310,12 @@
 <body>
 
 <div class="container">
+    <div class="theme-bar">
+        <button type="button" id="theme-toggle" class="theme-toggle" aria-label="切換亮暗主題">
+            <span id="theme-toggle-icon" aria-hidden="true">💻</span>
+            <span id="theme-toggle-label">跟隨系統</span>
+        </button>
+    </div>
     <header>
         <h1>Discord 營養機器人</h1>
         <p>膳食攝取規劃儀表板</p>
@@ -321,7 +376,7 @@
             <div class="summary-banner">
                 <div class="tag-group">
                     <span class="summary-tag" id="result-activity"></span>
-                    <span class="summary-tag" id="result-goal" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;"></span>
+                    <span class="summary-tag" id="result-goal" style="background: rgba(59, 130, 246, 0.15); color: var(--accent-blue);"></span>
                 </div>
                 <div class="tdee-val">
                     <div>基礎代謝約 <span id="bmr-kcal" style="color: var(--primary);"></span> 大卡／天</div>
@@ -392,6 +447,50 @@
         <a class="discord-btn" href="https://discord.com/oauth2/authorize?client_id=1549695115252072579">將機器人加入 Discord</a>
     </div>
 </div>
+
+<script>
+    (function () {
+        const toggle = document.getElementById("theme-toggle");
+        const icon = document.getElementById("theme-toggle-icon");
+        const label = document.getElementById("theme-toggle-label");
+        const modes = {
+            system: { icon: "💻", text: "跟隨系統" },
+            light: { icon: "☀️", text: "亮色模式" },
+            dark: { icon: "🌙", text: "暗色模式" },
+        };
+        const order = ["system", "light", "dark"];
+        let current = "system";
+
+        function apply(mode) {
+            current = mode;
+            if (mode === "system") {
+                delete document.documentElement.dataset.theme;
+            } else {
+                document.documentElement.dataset.theme = mode;
+            }
+            try {
+                if (mode === "system") {
+                    localStorage.removeItem("theme");
+                } else {
+                    localStorage.setItem("theme", mode);
+                }
+            } catch (error) {
+                // 私密瀏覽等無法寫入時，僅本次瀏覽生效
+            }
+            icon.textContent = modes[mode].icon;
+            label.textContent = modes[mode].text;
+            toggle.title = `主題：${modes[mode].text}（點擊切換）`;
+            toggle.setAttribute("aria-label", toggle.title);
+        }
+
+        toggle.addEventListener("click", () => {
+            apply(order[(order.indexOf(current) + 1) % order.length]);
+        });
+
+        const initial = document.documentElement.dataset.theme;
+        apply(initial === "light" || initial === "dark" ? initial : "system");
+    })();
+</script>
 
 </body>
 </html>
