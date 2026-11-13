@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Discord 營養機器人 | 膳食攝取規劃儀表板</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <script>
         (function () {
             try {
@@ -19,16 +22,20 @@
     <style>
         :root {
             color-scheme: light dark;
-            --bg-color: light-dark(#f1f5f9, #0f172a);
-            --card-bg: light-dark(#ffffff, #1e293b);
-            --card-border: light-dark(#cbd5e1, #334155);
-            --primary: light-dark(#047857, #10b981);
-            --primary-light: rgba(16, 185, 129, 0.1);
-            --text-main: light-dark(#0f172a, #f8fafc);
-            --text-muted: light-dark(#475569, #94a3b8);
-            --accent-blue: light-dark(#2563eb, #3b82f6);
+            --bg-color: light-dark(#f3f5f1, #0b0f0c);
+            --card-bg: light-dark(#ffffff, #141915);
+            --card-border: light-dark(#ccd4ca, #2a342c);
+            --text-main: light-dark(#101510, #f2f6ef);
+            --text-muted: light-dark(#5c6658, #9aa795);
+            --acid: #b8f34a;
+            --acid-soft: rgba(184, 243, 74, 0.14);
+            --accent-blue: light-dark(#3159ff, #8ea3ff);
+            --carbon: #101510;
+            --carbon-line: light-dark(#101510, #35422b);
+            --on-carbon: #f2f6ef;
+            --on-carbon-muted: #9aa795;
+            --on-carbon-line: rgba(242, 246, 239, 0.16);
             --discord-blurple: #5865F2;
-            --shadow: light-dark(rgba(15, 23, 42, 0.08), rgba(0, 0, 0, 0.25));
         }
 
         :root[data-theme="light"] {
@@ -43,130 +50,190 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            letter-spacing: 0;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            line-height: 1.6;
-            padding: 32px 16px;
+            line-height: 1.65;
+            padding: 24px 20px 48px;
             transition: background-color 0.2s, color 0.2s;
         }
 
         .container {
-            max-width: 850px;
+            max-width: 1120px;
             margin: 0 auto;
         }
 
-        .theme-bar {
+        .top-bar {
             display: flex;
-            justify-content: flex-end;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--card-border);
+            margin-bottom: 28px;
         }
 
-        .theme-toggle {
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .brand-mark {
+            width: 10px;
+            height: 10px;
+            background: var(--acid);
+            flex-shrink: 0;
+        }
+
+        .brand-sub {
+            color: var(--text-muted);
+            font-weight: 400;
+            padding-left: 10px;
+            border-left: 1px solid var(--card-border);
+        }
+
+        .theme-switch {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 6px;
-            min-width: 116px;
+            gap: 2px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 8px;
-            color: var(--text-muted);
-            padding: 6px 12px;
-            font: inherit;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: border-color 0.2s, color 0.2s;
+            border-radius: 6px;
+            padding: 3px;
         }
 
-        .theme-toggle:hover {
+        .theme-option {
+            border: 0;
+            background: transparent;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            font: inherit;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.15s, color 0.15s;
+        }
+
+        .theme-option:hover {
             color: var(--text-main);
-            border-color: var(--primary);
+        }
+
+        .theme-option.is-active {
+            background: var(--acid);
+            color: #101510;
+            font-weight: 700;
         }
 
         header {
-            text-align: center;
-            padding: 20px 0 30px;
+            margin-bottom: 28px;
         }
 
         header h1 {
-            font-size: 2.2rem;
-            color: var(--primary);
-            margin-bottom: 8px;
+            font-size: 2rem;
             font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 6px;
         }
 
         header p {
             color: var(--text-muted);
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
 
-        .card {
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+            gap: 20px;
+            align-items: start;
+            margin-bottom: 20px;
+        }
+
+        .panel {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 28px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 20px var(--shadow);
+            border-radius: 6px;
+            padding: 24px;
         }
 
-        .card-title {
-            font-size: 1.25rem;
-            margin-bottom: 20px;
+        .section-title {
             display: flex;
-            align-items: center;
+            align-items: baseline;
             gap: 10px;
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 12px;
-            color: var(--text-main);
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .section-index {
+            color: var(--accent-blue);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
         }
 
         /* 1. 個人資料表單區 */
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
 
         .form-group label {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
+            font-weight: 500;
             color: var(--text-muted);
         }
 
         .form-group input, .form-group select {
             min-width: 0;
-            background: var(--bg-color);
+            width: 100%;
+            background: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 8px;
+            border-radius: 4px;
             padding: 10px 14px;
+            min-height: 44px;
             color: var(--text-main);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            font-family: inherit;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
 
         .form-group input:focus, .form-group select:focus {
-            border-color: var(--primary);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(49, 89, 255, 0.18);
         }
 
         .calculate-btn {
-            background: var(--primary);
-            color: var(--bg-color);
+            display: block;
+            width: 100%;
+            background: var(--acid);
+            color: #101510;
             border: 0;
-            border-radius: 8px;
-            padding: 10px 20px;
-            margin-top: 18px;
+            padding: 14px 20px;
+            margin-top: 24px;
             font: inherit;
             font-weight: 700;
             cursor: pointer;
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+            transition: background-color 0.15s;
+        }
+
+        .calculate-btn:hover:not(:disabled) {
+            background: #c8ff62;
         }
 
         .calculate-btn:disabled {
@@ -174,13 +241,15 @@
             cursor: default;
         }
 
-        .help-text {
-            color: var(--text-muted);
-            font-size: 0.9rem;
+        button:focus-visible, a:focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
         }
 
-        .result-status {
-            margin-bottom: 16px;
+        .help-text {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            line-height: 1.6;
         }
 
         .help-text a {
@@ -188,120 +257,242 @@
         }
 
         /* 2. 營養計算與目標呈現區 */
-        .summary-banner {
+        .result-panel {
+            background: var(--carbon);
+            border: 1px solid var(--carbon-line);
+            color: var(--on-carbon);
+        }
+
+        .result-panel .section-index {
+            color: var(--acid);
+        }
+
+        .result-panel .help-text {
+            color: var(--on-carbon-muted);
+        }
+
+        .result-panel .help-text a {
+            color: #9db1ff;
+        }
+
+        #result-status {
+            color: var(--on-carbon-muted);
+            font-size: 0.85rem;
+        }
+
+        #nutrition-results {
+            margin-top: 4px;
+        }
+
+        .kcal-hero {
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--on-carbon-line);
+        }
+
+        .kcal-label {
+            font-size: 0.8rem;
+            color: var(--on-carbon-muted);
+            margin-bottom: 8px;
+        }
+
+        .kcal-value {
             display: flex;
+            align-items: baseline;
             flex-wrap: wrap;
             gap: 12px;
-            background: var(--primary-light);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-bottom: 24px;
-            justify-content: space-between;
-            align-items: center;
         }
 
-        .tag-group {
+        #target-kcal {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--acid);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .kcal-unit {
+            color: var(--on-carbon-muted);
+            font-size: 0.85rem;
+        }
+
+        .meta-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
+            margin-top: 16px;
         }
 
-        .summary-tag {
+        .meta-tag {
             display: inline-block;
-            background: var(--card-border);
-            padding: 4px 12px;
-            border-radius: 20px;
+            background: var(--acid-soft);
+            color: var(--acid);
+            border-radius: 4px;
+            padding: 4px 10px;
             font-size: 0.85rem;
-            color: var(--primary);
-            font-weight: 600;
+            font-weight: 500;
         }
 
-        .tdee-val {
-            font-size: 1.05rem;
-            font-weight: 600;
+        .base-stats {
+            margin-top: 16px;
         }
 
-        /* 三大營養素數值卡片 (純目標顯示) */
-        .macro-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 14px;
-            margin-bottom: 28px;
-        }
-
-        .macro-card {
-            background: var(--bg-color);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-        }
-
-        .macro-label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .macro-val {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        /* 六大類食物卡片網格 */
-        .food-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-            gap: 14px;
-        }
-
-        .food-card {
-            background: var(--bg-color);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 16px;
+        .base-stats > div, .macro-row, .food-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: baseline;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--on-carbon-line);
         }
 
-        .food-name {
+        .base-stats dt, .macro-row dt, .food-row dt {
+            font-size: 0.8rem;
+            color: var(--on-carbon-muted);
+            font-weight: 400;
+        }
+
+        .base-stats dd, .macro-row dd, .food-row dd {
+            font-size: 0.85rem;
+        }
+
+        .num {
+            font-family: 'Space Grotesk', 'Noto Sans TC', sans-serif;
+            font-variant-numeric: tabular-nums;
+            font-weight: 500;
+        }
+
+        /* 三大營養素與六大類食物 */
+        .group-label {
+            font-size: 0.8rem;
+            color: var(--on-carbon-muted);
+            margin: 24px 0 4px;
+        }
+
+        .macro-grid {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .macro-row dd {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            column-gap: 24px;
+        }
+
+        .food-row dt {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.95rem;
         }
 
-        .food-amount {
-            font-weight: bold;
-            color: var(--accent-blue);
-            font-size: 1.05rem;
-            margin-left: 8px;
+        .food-chip {
+            width: 8px;
+            height: 8px;
+            flex-shrink: 0;
+        }
+
+        .chip-grains { background: #e7c766; }
+        .chip-protein { background: #e07856; }
+        .chip-dairy { background: #7fb4e8; }
+        .chip-vegetables { background: #7bc47f; }
+        .chip-fruits { background: #e8899b; }
+        .chip-oils { background: #d9a05b; }
+
+        .food-row .num {
             white-space: nowrap;
+            color: var(--on-carbon);
         }
 
-        /* 3. Discord 機器人邀請區 */
+        .result-footnote {
+            margin-top: 20px;
+        }
+
+        /* Discord 機器人邀請區 */
         .discord-card {
-            text-align: center;
-            background: linear-gradient(135deg, rgba(88,101,242,0.12) 0%, var(--card-bg) 100%);
-            border: 1px solid var(--discord-blurple);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .discord-card h2 {
+            font-size: 1rem;
+            margin-bottom: 4px;
         }
 
         .discord-btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
             gap: 8px;
             background-color: var(--discord-blurple);
             color: #ffffff;
-            padding: 12px 28px;
-            border-radius: 10px;
+            padding: 12px 24px;
+            border-radius: 4px;
             text-decoration: none;
-            font-weight: bold;
-            font-size: 1rem;
+            font-weight: 700;
+            font-size: 0.9rem;
             border: 0;
-            margin-top: 16px;
+            transition: background-color 0.15s;
+        }
+
+        .discord-btn:hover {
+            background-color: #4752c4;
+        }
+
+        @media (max-width: 900px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .food-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 560px) {
+            body {
+                padding: 16px 12px 40px;
+            }
+
+            .brand-sub {
+                display: none;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .panel {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #target-kcal {
+                font-size: 2.75rem;
+            }
+
+            .discord-card {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                transition: none !important;
+            }
         }
     </style>
     <script src="nutrition.js" defer></script>
@@ -310,158 +501,159 @@
 <body>
 
 <div class="container">
-    <div class="theme-bar">
-        <button type="button" id="theme-toggle" class="theme-toggle" aria-label="切換亮暗主題">
-            <span id="theme-toggle-icon" aria-hidden="true">💻</span>
-            <span id="theme-toggle-label">跟隨系統</span>
-        </button>
-    </div>
-    <header>
-        <h1>Discord 營養機器人</h1>
-        <p>膳食攝取規劃儀表板</p>
-    </header>
-
-    <!-- 1. 個人數據輸入欄位 -->
-    <div class="card">
-        <h2 class="card-title">📝 輸入個人基本數據</h2>
-        <form id="nutrition-form">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="age">年齡（歲）</label>
-                    <input type="number" id="age" min="18" max="79" step="any" aria-describedby="age-help" required>
-                    <small id="age-help" class="help-text">基礎代謝公式適用於 18–79 歲。</small>
-                </div>
-                <div class="form-group">
-                    <label for="gender">生理性別</label>
-                    <select id="gender" required>
-                        <option value="" selected disabled>請選擇</option>
-                        <option value="1">男</option>
-                        <option value="2">女</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="activity">生活活動強度</label>
-                    <select id="activity" aria-describedby="activity-help" required>
-                        <option value="" selected disabled>請選擇</option>
-                    </select>
-                    <small id="activity-help" class="help-text">依一天中大部分時間的活動選擇。</small>
-                </div>
-                <div class="form-group">
-                    <label for="height">身高（公分）</label>
-                    <input type="number" id="height" min="50" max="250" step="any" required>
-                </div>
-                <div class="form-group">
-                    <label for="weight">體重（公斤）</label>
-                    <input type="number" id="weight" min="10" max="500" step="any" required>
-                </div>
-                <div class="form-group">
-                    <label for="goal">目標</label>
-                    <select id="goal" required></select>
-                </div>
-            </div>
-            <button type="submit" class="calculate-btn" disabled>計算每日攝取量</button>
-            <noscript><p class="help-text">請啟用 JavaScript 以使用計算功能。</p></noscript>
-        </form>
-    </div>
-
-    <!-- 2. 計算結果呈現區 (純目標量展示) -->
-    <div class="card">
-        <h2 class="card-title">📊 每日參考膳食攝取量</h2>
-
-        <p id="result-status" class="help-text result-status" role="status">填寫資料後即可計算每日建議量。</p>
-
-        <div id="nutrition-results" hidden>
-            <!-- 狀態摘要標籤 -->
-            <div class="summary-banner">
-                <div class="tag-group">
-                    <span class="summary-tag" id="result-activity"></span>
-                    <span class="summary-tag" id="result-goal" style="background: rgba(59, 130, 246, 0.15); color: var(--accent-blue);"></span>
-                </div>
-                <div class="tdee-val">
-                    <div>基礎代謝約 <span id="bmr-kcal" style="color: var(--primary);"></span> 大卡／天</div>
-                    <div>維持體重約需 <span id="maintain-kcal" style="color: var(--primary);"></span> 大卡／天</div>
-                </div>
-            </div>
-
-            <!-- 熱量與三大營養素目標卡片 -->
-            <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--text-muted);">🔥 熱量與三大營養素建議量</h3>
-            <div class="macro-grid">
-                <div class="macro-card">
-                    <div class="macro-label">每日目標熱量</div>
-                    <div class="macro-val" id="target-kcal"></div>
-                </div>
-                <div class="macro-card">
-                    <div class="macro-label">🥩 蛋白質</div>
-                    <div class="macro-val" id="target-protein"></div>
-                </div>
-                <div class="macro-card">
-                    <div class="macro-label">🥑 脂質</div>
-                    <div class="macro-val" id="target-fat"></div>
-                </div>
-                <div class="macro-card">
-                    <div class="macro-label">🌾 碳水化合物</div>
-                    <div class="macro-val" id="target-carbs"></div>
-                </div>
-            </div>
-
-            <!-- 六大類食物每日建議份數 -->
-            <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--text-muted);">🥗 六大類食物每日建議份數</h3>
-            <div class="food-grid">
-                <div class="food-card">
-                    <div class="food-name">🍚 全穀雜糧類</div>
-                    <div class="food-amount" id="whole_grains"></div>
-                </div>
-                <div class="food-card">
-                    <div class="food-name">🍳 豆魚蛋肉類</div>
-                    <div class="food-amount" id="legumes_fish_meat_and_eggs"></div>
-                </div>
-                <div class="food-card">
-                    <div class="food-name">🥛 乳品類</div>
-                    <div class="food-amount" id="dairy"></div>
-                </div>
-                <div class="food-card">
-                    <div class="food-name">🥦 蔬菜類</div>
-                    <div class="food-amount" id="vegetables"></div>
-                </div>
-                <div class="food-card">
-                    <div class="food-name">🍎 水果類</div>
-                    <div class="food-amount" id="fruits"></div>
-                </div>
-                <div class="food-card">
-                    <div class="food-name">🥜 油脂與堅果種子類</div>
-                    <div class="food-amount" id="oils_fats_nuts_and_seeds"></div>
-                </div>
-            </div>
-            <p class="help-text" style="margin-top: 16px;">基礎代謝依<a href="https://www.mhlw.go.jp/content/10904750/001316585.pdf#page=77">日本國立健康與營養研究所公式</a>估算。活動係數沿用國健署第八版資料，食物份數依食物代換表估算。</p>
+    <div class="top-bar">
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <span>Discord 營養機器人</span>
+            <span class="brand-sub">膳食攝取規劃儀表板</span>
+        </div>
+        <div class="theme-switch" role="group" aria-label="主題模式">
+            <button type="button" class="theme-option is-active" data-mode="system" aria-pressed="true">系統</button>
+            <button type="button" class="theme-option" data-mode="light" aria-pressed="false">亮色</button>
+            <button type="button" class="theme-option" data-mode="dark" aria-pressed="false">暗色</button>
         </div>
     </div>
+    <header>
+        <h1>每日營養目標</h1>
+        <p>輸入身體數據，換算每日熱量與六大類食物份量。</p>
+    </header>
+
+    <main class="workspace">
+        <!-- 1. 個人數據輸入欄位 -->
+        <section class="panel" aria-labelledby="input-title">
+            <h2 class="section-title" id="input-title"><span class="section-index">01</span>輸入個人基本數據</h2>
+            <form id="nutrition-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="age">年齡（歲）</label>
+                        <input type="number" id="age" min="18" max="79" step="any" aria-describedby="age-help" required>
+                        <small id="age-help" class="help-text">基礎代謝公式適用於 18–79 歲。</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">生理性別</label>
+                        <select id="gender" required>
+                            <option value="" selected disabled>請選擇</option>
+                            <option value="1">男</option>
+                            <option value="2">女</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="activity">生活活動強度</label>
+                        <select id="activity" aria-describedby="activity-help" required>
+                            <option value="" selected disabled>請選擇</option>
+                        </select>
+                        <small id="activity-help" class="help-text">依一天中大部分時間的活動選擇。</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="height">身高（公分）</label>
+                        <input type="number" id="height" min="50" max="250" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">體重（公斤）</label>
+                        <input type="number" id="weight" min="10" max="500" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal">目標</label>
+                        <select id="goal" required></select>
+                    </div>
+                </div>
+                <button type="submit" class="calculate-btn" disabled>計算每日攝取量</button>
+                <noscript><p class="help-text">請啟用 JavaScript 以使用計算功能。</p></noscript>
+            </form>
+        </section>
+
+        <!-- 2. 計算結果呈現區 (純目標量展示) -->
+        <section class="panel result-panel" aria-labelledby="results-title">
+            <h2 class="section-title" id="results-title"><span class="section-index">02</span>每日參考膳食攝取量</h2>
+
+            <p id="result-status" class="help-text" role="status">填寫資料後即可計算每日建議量。</p>
+
+            <div id="nutrition-results" hidden>
+                <div class="kcal-hero">
+                    <div class="kcal-label">每日目標熱量</div>
+                    <div class="kcal-value">
+                        <span class="num" id="target-kcal"></span>
+                        <span class="kcal-unit">大卡／天</span>
+                    </div>
+                    <div class="meta-tags">
+                        <span class="meta-tag" id="result-activity"></span>
+                        <span class="meta-tag" id="result-goal"></span>
+                    </div>
+                </div>
+                <dl class="base-stats">
+                    <div>
+                        <dt>基礎代謝</dt>
+                        <dd><span class="num" id="bmr-kcal"></span> 大卡／天</dd>
+                    </div>
+                    <div>
+                        <dt>維持體重約需</dt>
+                        <dd><span class="num" id="maintain-kcal"></span> 大卡／天</dd>
+                    </div>
+                </dl>
+
+                <h3 class="group-label">三大營養素建議量</h3>
+                <dl class="macro-grid">
+                    <div class="macro-row">
+                        <dt>蛋白質</dt>
+                        <dd class="num" id="target-protein"></dd>
+                    </div>
+                    <div class="macro-row">
+                        <dt>脂質</dt>
+                        <dd class="num" id="target-fat"></dd>
+                    </div>
+                    <div class="macro-row">
+                        <dt>碳水化合物</dt>
+                        <dd class="num" id="target-carbs"></dd>
+                    </div>
+                </dl>
+
+                <h3 class="group-label">六大類食物每日建議份數</h3>
+                <dl class="food-grid">
+                    <div class="food-row">
+                        <dt><span class="food-chip chip-grains" aria-hidden="true"></span>全穀雜糧類</dt>
+                        <dd class="num" id="whole_grains"></dd>
+                    </div>
+                    <div class="food-row">
+                        <dt><span class="food-chip chip-protein" aria-hidden="true"></span>豆魚蛋肉類</dt>
+                        <dd class="num" id="legumes_fish_meat_and_eggs"></dd>
+                    </div>
+                    <div class="food-row">
+                        <dt><span class="food-chip chip-dairy" aria-hidden="true"></span>乳品類</dt>
+                        <dd class="num" id="dairy"></dd>
+                    </div>
+                    <div class="food-row">
+                        <dt><span class="food-chip chip-vegetables" aria-hidden="true"></span>蔬菜類</dt>
+                        <dd class="num" id="vegetables"></dd>
+                    </div>
+                    <div class="food-row">
+                        <dt><span class="food-chip chip-fruits" aria-hidden="true"></span>水果類</dt>
+                        <dd class="num" id="fruits"></dd>
+                    </div>
+                    <div class="food-row">
+                        <dt><span class="food-chip chip-oils" aria-hidden="true"></span>油脂與堅果種子類</dt>
+                        <dd class="num" id="oils_fats_nuts_and_seeds"></dd>
+                    </div>
+                </dl>
+                <p class="help-text result-footnote">基礎代謝依<a href="https://www.mhlw.go.jp/content/10904750/001316585.pdf#page=77">日本國立健康與營養研究所公式</a>估算。活動係數沿用國健署第八版資料，食物份數依食物代換表估算。</p>
+            </div>
+        </section>
+    </main>
 
     <!-- 3. Discord 邀請連結 -->
-    <div class="card discord-card">
-        <h2 style="font-size: 1.3rem; margin-bottom: 8px;">🚀 邀請營養機器人到你的 Discord 伺服器</h2>
-        <p style="color: var(--text-muted); font-size: 0.95rem;">
-            輕鬆打造社群專屬健康追蹤體驗，讓營養規劃變得簡單直覺！
-        </p>
-
+    <section class="panel discord-card">
+        <div>
+            <h2>把機器人加入你的伺服器</h2>
+            <p class="help-text">記錄飲食、查詢目標，直接在 Discord 完成。</p>
+        </div>
         <a class="discord-btn" href="https://discord.com/oauth2/authorize?client_id=1549695115252072579">將機器人加入 Discord</a>
-    </div>
+    </section>
 </div>
 
 <script>
     (function () {
-        const toggle = document.getElementById("theme-toggle");
-        const icon = document.getElementById("theme-toggle-icon");
-        const label = document.getElementById("theme-toggle-label");
-        const modes = {
-            system: { icon: "💻", text: "跟隨系統" },
-            light: { icon: "☀️", text: "亮色模式" },
-            dark: { icon: "🌙", text: "暗色模式" },
-        };
-        const order = ["system", "light", "dark"];
-        let current = "system";
+        const options = document.querySelectorAll(".theme-option");
 
         function apply(mode) {
-            current = mode;
             if (mode === "system") {
                 delete document.documentElement.dataset.theme;
             } else {
@@ -476,14 +668,15 @@
             } catch (error) {
                 // 私密瀏覽等無法寫入時，僅本次瀏覽生效
             }
-            icon.textContent = modes[mode].icon;
-            label.textContent = modes[mode].text;
-            toggle.title = `主題：${modes[mode].text}（點擊切換）`;
-            toggle.setAttribute("aria-label", toggle.title);
+            options.forEach((option) => {
+                const isActive = option.dataset.mode === mode;
+                option.classList.toggle("is-active", isActive);
+                option.setAttribute("aria-pressed", String(isActive));
+            });
         }
 
-        toggle.addEventListener("click", () => {
-            apply(order[(order.indexOf(current) + 1) % order.length]);
+        options.forEach((option) => {
+            option.addEventListener("click", () => apply(option.dataset.mode));
         });
 
         const initial = document.documentElement.dataset.theme;

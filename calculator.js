@@ -54,7 +54,7 @@ form.addEventListener("submit", (event) => {
     byId("result-goal").textContent = `目標：${GOALS[goal.value].name}`;
     byId("bmr-kcal").textContent = Math.round(target.bmr_kcal);
     byId("maintain-kcal").textContent = Math.round(target.maintain_kcal);
-    byId("target-kcal").textContent = `${kcal} 大卡`;
+    byId("target-kcal").textContent = kcal;
     for (const [name, range] of Object.entries(target.ranges)) {
         byId(`target-${name}`).textContent = formatRange(range);
     }
